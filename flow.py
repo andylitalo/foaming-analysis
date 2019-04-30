@@ -2,11 +2,20 @@
 """
 Created on Thu Feb 21 11:47:30 2019
 
+These functions define mathematical functions that compute properties of
+flowing streams such as flow rate, pressure, flow speed, and radius (for sheath
+flows).
+
 @author: Andy
 """
 
 import numpy as np
 
+
+def compute_average_stream_width():
+    """
+    
+    """
 
 def get_flow_rates_fixed_speed(d_inner, v_center=1.0, ID=500):
     """
@@ -31,6 +40,35 @@ def get_flow_rates_fixed_speed(d_inner, v_center=1.0, ID=500):
     # convert units to mL/min
     Q_i = Q_i_m3s*60E6
     Q_o = Q_o_m3s*60E6
+
+    return Q_i, Q_o
+
+def get_flow_rates_ri_dp(eta, r_i, dp, r_obs_cap=250, l_obs_cap=10):
+    """
+    Computes the flow rates of inner and outer streams given the radius of the
+    inner stream (r_i) in um, the pressure drop down the observation capillary
+    (dp) in bar, the radius of the observation capillary (r_obs_cap) in um,
+    and the length of the observation capillary (l_obs_cap) in cm.
+
+    Assumes Newtonian fluid and same viscosities for inner and outer streams.
+
+    returns:
+        Q_i = flow rate of inner stream in mL/min
+        Q_o = flow rate of outer stream in mL/min
+    """
+    # convert to SI
+    r_i /= 1E6 # um -> m
+    dp *= 1E5 # bar -> Pa
+    r_obs_cap /= 1E6 # um -> m
+    l_obs_cap /= 100 # cm -> m    
+
+    # compute flow rates [m^3/s]
+    Q_i = np.pi*dp*r_i**2/(4*eta*l_obs_cap)*(r_obs_cap**2 - 0.5*r_i**2)
+    Q_o = np.pi*r_obs_cap**4/(8*eta*l_obs_cap)*dp - Q_i
+
+    # convert units to uL/min
+    Q_i *= 60E9
+    Q_o *= 60E9
 
     return Q_i, Q_o
 
@@ -98,7 +136,7 @@ def get_flow_rates(eta, p_i=None, Q_i=None, p_o=None, Q_o=None, l_obs_cap=10,
                 l_tube_i*l_obs_cap*r_tube_o**4 + \
                 l_tube_i*l_tube_o*r_obs_cap**4)))
         Q_i = num_Q_i / denom
-        Q_o = num_Q_i / denom
+        Q_o = num_Q_o / denom
 
     # given inner stream pressure and outer stream flow rate
     elif (p_i is not None) and (Q_o is not None):
@@ -127,7 +165,7 @@ def get_flow_rates(eta, p_i=None, Q_i=None, p_o=None, Q_o=None, l_obs_cap=10,
         Q_i /= 60E9
         Q_o /= 60E9
     else:
-        error("if statements failed to elicit a true response.")
+        print("'if' statements failed to elicit a true response.")
 
     # CONVERT FROM M^3/S -> UL/MIN
     Q_i *= 60E9
@@ -135,6 +173,45 @@ def get_flow_rates(eta, p_i=None, Q_i=None, p_o=None, Q_o=None, l_obs_cap=10,
 
     return Q_i, Q_o
 
+def test_get_flow_rates():
+    """
+    Tests the method "get_flow_rates()".
+    """
+    # test values for inner stream and outer stream pressures [bar]
+    p_i = 12
+    p_o = 10
+    # test value for viscosity
+    eta = 1.412
+
+    # get flow rates
+    Q_i, Q_o = get_flow_rates(eta, p_i=p_i, p_o=p_o)
+    print("Flow rates are Q_i = {Q_i} uL/min and Q_o = {Q_o} uL/min."\
+        .format(Q_i=Q_i, Q_o=Q_o))
+
+    # Test 1: compare pressures
+    p_i_1, p_o_1, p_inner_cap, p_obs_cap = get_pressures(eta, Q_i, Q_o)
+    # print result of test 1
+    print("Test 1")
+    print("Test values of pressure:")
+    print("p_i = {p_i} bar and p_o = {p_o} bar."\
+        .format(p_i=p_i, p_o=p_o))
+    print("Resulting values for the pressure:")
+    print("p_i = {p_i_1} bar and p_o = {p_o_1} bar."\
+        .format(p_i_1=p_i_1, p_o_1=p_o_1))
+
+    # Test 2: compare flow rates given inner pressure and outer flow rate
+    Q_i_2, Q_o_2 = get_flow_rates(eta, p_i=p_i, Q_o=Q_o)
+    print("Test 2: flow rates given inner pressure and outer flow rate")
+    print("Q_i = {Q_i_2} uL/min and Q_o = {Q_o_2} uL/min." \
+        .format(Q_i_2=Q_i_2, Q_o_2=Q_o_2))
+
+    # Test 3: compare flow rates given outer pressure and inner flow rate
+    Qi3, Qo3 = get_flow_rates(eta, p_o=p_o, Q_i=Q_i)
+    print("Test 3: flow rates given outer pressure and inner flow rate")
+    print("Q_i = {Qi3} uL/min and Q_o = {Qo3} uL/min." \
+            .format(Qi3=Qi3, Qo3=Qo3))
+
+    return
 
 def get_pressures(eta, Q_i, Q_o, l_obs_cap=10,
     r_obs_cap=250, l_inner_cap=2.3, r_inner_cap=280, l_tube_i=20,

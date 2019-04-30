@@ -8,9 +8,10 @@ Created on Thu Apr 18 15:47:57 2019
 import matplotlib.pyplot as plt
 
 
-def plot_p_T_vs_t(p, T, t, log_t=False, t_lim=None, save_plot=False,
-                  save_path='', title='CO2(s) + Voranol 360 in Parr Reactor',
-                  lw=2, ax_fs=18, t_fs=20, tk_fs=14, colors=['k','b'], line_styles=['-','--']):
+def plot_p_T_vs_t(p, T, t, log_t=False, t_lim=None, t_units='s', p_units='psi',
+                save_plot=False, save_path='',
+                title='CO2(s) + Voranol 360 in Parr Reactor', lw=2, ax_fs=18,
+                t_fs=20, tk_fs=14, colors=['k','b'], line_styles=['-','--']):
     """
     Plots pressure and temperature on same plot as a function of time.
     Different vertical axes are used to keep pressure and temperature on similar scales.
@@ -23,8 +24,8 @@ def plot_p_T_vs_t(p, T, t, log_t=False, t_lim=None, save_plot=False,
     else:
         ax1.plot(t, p, line_styles[0], label='p', color=colors[0], linewidth=lw)
     # labels
-    ax1.set_xlabel('time (s)', fontsize=ax_fs)
-    ax1.set_ylabel('pressure (psi)', color=colors[0], fontsize=ax_fs)
+    ax1.set_xlabel('time ' + t_units, fontsize=ax_fs)
+    ax1.set_ylabel('pressure ' + p_units, color=colors[0], fontsize=ax_fs)
     ax1.tick_params('y', colors=colors[0])
     ax1.set_title(title, fontsize=t_fs)
 
@@ -51,7 +52,8 @@ def plot_p_T_vs_t(p, T, t, log_t=False, t_lim=None, save_plot=False,
     if save_plot:
         plt.savefig(save_path, bbox_inches="tight")
 
-def plot_p_vs_t(p, t, log_t=False, log_p=False, p_lim=None, t_lim=None, save_plot=False,
+def plot_p_vs_t(p, t, log_t=False, log_p=False, p_lim=None, t_lim=None,
+                t_units='s', p_units='psi', save_plot=False,
                   save_path='', title='Pressure over Time: Voranol 360 w CO2',
                 ms=4, ax_fs=18, t_fs=20, tk_fs=14, color='b'):
     fig, ax = plt.subplots()
@@ -64,8 +66,8 @@ def plot_p_vs_t(p, t, log_t=False, log_p=False, p_lim=None, t_lim=None, save_plo
         ax.semilogy(t, p, '.', color=color, markersize=ms)
     else:
         ax.plot(t, p, '.', color=color, markersize=ms)
-    ax.set_xlabel('time (s)', fontsize=ax_fs)
-    ax.set_ylabel('pressure (psi)', fontsize=ax_fs)
+    ax.set_xlabel('time ' + t_units, fontsize=ax_fs)
+    ax.set_ylabel('pressure ' + p_units, fontsize=ax_fs)
     ax.set_title(title, fontsize=t_fs)
     # limit viewing window ?
     if p_lim is not None:
