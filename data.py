@@ -8,6 +8,10 @@ metadata.
 @author: Andy
 """
 
+import glob
+import os
+
+
 def get_filepaths(path, template):
     """
     Returns a list of filepaths to files inside the given folder that start 
@@ -20,7 +24,13 @@ def get_filepaths(path, template):
             Template for file names, using "*" for varying parts of file name
     
     Returns:
-        filepaths : list
+        file_list : list
             List of filepaths to the desired files
     """
+    # Get file path
+    filepath_structure = os.path.join(path, template)
+    file_list = glob.glob(filepath_structure)
     
+    return file_list
+
+
